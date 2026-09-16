@@ -72,9 +72,10 @@
 проверены 16 сентября 2026 года.</p>
 
 <p><a href="#kak">Как это ставится</a> · <a href="#agenty">Агенты</a> ·
-<a href="#dizayn">Скиллы для дизайна</a> · <a href="#designmd">DESIGN.md</a> ·
+<a href="#dizayn">Скиллы для дизайна</a> ·
 <a href="#tekst">Текст и видео</a> · <a href="#process">Процессные</a> ·
-<a href="#mcp">MCP-серверы</a> · <a href="#komandy">Команды</a> ·
+<a href="#mcp">MCP-серверы</a> · <a href="#designmd">DESIGN.md</a> ·
+<a href="#komandy">Команды</a> ·
 <a href="#glavnoe">Что важнее скиллов</a></p>
 
 <h2 id="kak">Как установить</h2>
@@ -263,73 +264,6 @@ design-advisor и design-qa рендерят в headless-браузере при
   </article>
 </div>
 
-<h2 id="designmd">DESIGN.md</h2>
-
-<p>DESIGN.md — формат файла, не скилл. Решает главную проблему AI-вёрстки: без вашей
-дизайн-системы модель каждый раз придумывает свою.</p>
-
-<p>Открытая спецификация от Google Labs под Apache-2.0. Пока в статусе alpha:
-формат и CLI ещё меняются. Положите файл в корень проекта.
-В нём две части. YAML-шапка с токенами: colors, typography, rounded, spacing,
-components, со ссылками между ними вида <code>{colors.tertiary}</code>. Дальше текст
-по разделам: Overview, Colors, Typography, Layout, Elevation, Shapes, Components,
-Do's and Don'ts. В токенах агент найдёт точные значения, в тексте — объяснение их назначения.</p>
-
-<p>По моему опыту, точность больше всего повышает раздел Don'ts: явные запреты вроде
-«не больше двух CTA на экране» или «никаких теней, только границы» работают лучше,
-чем описания желаемого. Формат задуман общим для разных AI-инструментов,
-поэтому файл не приходится переписывать под каждый.</p>
-
-<pre>npx @google/design.md lint DESIGN.md
-npx @google/design.md export --format css-tailwind DESIGN.md
-npx @google/design.md spec</pre>
-
-<p>Спецификация: <a href="https://github.com/google-labs-code/design.md">github.com/google-labs-code/design.md</a>.
-Пакет: <a href="https://www.npmjs.com/package/@google/design.md">npmjs.com/package/@google/design.md</a>.
-Понятный разбор: <a href="https://designproject.io/blog/design-md-file/">designproject.io</a>.</p>
-
-<p>Писать такой файл с нуля не обязательно:</p>
-
-<div class="grid">
-  <article class="c">
-    <h3>generate-design-md</h3>
-    <p><em>Скилл.</em> Команда <code>/generate-design-md</code>: соберёт файл по вашему
-    описанию стиля или извлечёт цвета, шрифты и отступы из существующего кода.
-    Умеет валидировать и экспортировать.</p>
-    <div class="foot">
-      <pre>git clone https://github.com/shripunta/generate-design-md.git ~/.claude/skills/generate-design-md</pre>
-      <a href="https://github.com/ShriPunta/generate-design-md">github.com/ShriPunta/generate-design-md</a>
-    </div>
-  </article>
-
-  <article class="c">
-    <h3>Готовые DESIGN.md брендов</h3>
-    <p><em>Каталог.</em> По брендам: Linear, Notion, Stripe, Vercel, Figma, Apple, Spotify,
-    Tesla. Загрузите файл в Claude Design, чтобы получить CSS-переменные, UI-kit и SKILL.md.
-    Так можно быстро задать ориентир для дизайна.</p>
-    <div class="foot">
-      <a href="https://github.com/VoltAgent/awesome-claude-design">github.com/VoltAgent/awesome-claude-design</a>
-    </div>
-  </article>
-
-  <article class="c">
-    <h3>Плагин Figma</h3>
-    <p><em>Плагин.</em> Вытаскивает стили из вашего файла и собирает DESIGN.md.</p>
-    <div class="foot">
-      <a href="https://www.figma.com/community/plugin/1612814320994608244/design-md-generator">Figma Community — DESIGN.md Generator</a>
-    </div>
-  </article>
-
-  <article class="c">
-    <h3>designmd.co</h3>
-    <p><em>Каталог.</em> Готовые дизайны и удалённый MCP-сервер, чтобы агент брал дизайн
-    из каталога без копипаста.</p>
-    <div class="foot">
-      <a href="https://www.designmd.co/">designmd.co</a>
-    </div>
-  </article>
-</div>
-
 <h2 id="tekst">Скиллы для текста и видео</h2>
 
 <div class="grid">
@@ -422,6 +356,20 @@ npx @google/design.md spec</pre>
       <pre>/plugin marketplace add muratcankoylan/Agent-Skills-for-Context-Engineering
 /plugin install context-engineering@context-engineering-marketplace</pre>
       <a href="https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering">github.com/muratcankoylan/Agent-Skills-for-Context-Engineering</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>frontend-design</h3>
+    <p><em>Плагин.</em> Официальный, от Anthropic. Внутри один скилл — он включается,
+    когда Claude пишет интерфейс: держит планку продакшн-качества и уводит вёрстку
+    от дефолтной AI-эстетики.</p>
+    <p>Тот самый frontend-design, на который ссылается impeccable, только как плагин:
+    ставится одной командой, клонировать репозиторий не нужно. Самый популярный
+    плагин каталога — больше 1,2 млн установок.</p>
+    <div class="foot">
+      <pre>/plugin install frontend-design@claude-plugins-official</pre>
+      <a href="https://github.com/anthropics/claude-code/tree/main/plugins/frontend-design">github.com/anthropics/claude-code — plugins/frontend-design</a>
     </div>
   </article>
 </div>
@@ -528,6 +476,73 @@ npx @google/design.md spec</pre>
     <p class="foot">Команды подключения взяты из обзоров, вручную не проверены:
     <a href="https://www.toools.design/blog-posts/best-mcp-servers-for-designers">toools.design</a>,
     <a href="https://mcp.directory/blog/best-mcp-servers-for-design-2026">mcp.directory</a>.</p>
+  </article>
+</div>
+
+<h2 id="designmd">DESIGN.md</h2>
+
+<p>DESIGN.md — формат файла, не скилл. Решает главную проблему AI-вёрстки: без вашей
+дизайн-системы модель каждый раз придумывает свою.</p>
+
+<p>Открытая спецификация от Google Labs под Apache-2.0. Пока в статусе alpha:
+формат и CLI ещё меняются. Положите файл в корень проекта.
+В нём две части. YAML-шапка с токенами: colors, typography, rounded, spacing,
+components, со ссылками между ними вида <code>{colors.tertiary}</code>. Дальше текст
+по разделам: Overview, Colors, Typography, Layout, Elevation, Shapes, Components,
+Do's and Don'ts. В токенах агент найдёт точные значения, в тексте — объяснение их назначения.</p>
+
+<p>По моему опыту, точность больше всего повышает раздел Don'ts: явные запреты вроде
+«не больше двух CTA на экране» или «никаких теней, только границы» работают лучше,
+чем описания желаемого. Формат задуман общим для разных AI-инструментов,
+поэтому файл не приходится переписывать под каждый.</p>
+
+<pre>npx @google/design.md lint DESIGN.md
+npx @google/design.md export --format css-tailwind DESIGN.md
+npx @google/design.md spec</pre>
+
+<p>Спецификация: <a href="https://github.com/google-labs-code/design.md">github.com/google-labs-code/design.md</a>.
+Пакет: <a href="https://www.npmjs.com/package/@google/design.md">npmjs.com/package/@google/design.md</a>.
+Понятный разбор: <a href="https://designproject.io/blog/design-md-file/">designproject.io</a>.</p>
+
+<p>Писать такой файл с нуля не обязательно:</p>
+
+<div class="grid">
+  <article class="c">
+    <h3>generate-design-md</h3>
+    <p><em>Скилл.</em> Команда <code>/generate-design-md</code>: соберёт файл по вашему
+    описанию стиля или извлечёт цвета, шрифты и отступы из существующего кода.
+    Умеет валидировать и экспортировать.</p>
+    <div class="foot">
+      <pre>git clone https://github.com/shripunta/generate-design-md.git ~/.claude/skills/generate-design-md</pre>
+      <a href="https://github.com/ShriPunta/generate-design-md">github.com/ShriPunta/generate-design-md</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>Готовые DESIGN.md брендов</h3>
+    <p><em>Каталог.</em> По брендам: Linear, Notion, Stripe, Vercel, Figma, Apple, Spotify,
+    Tesla. Загрузите файл в Claude Design, чтобы получить CSS-переменные, UI-kit и SKILL.md.
+    Так можно быстро задать ориентир для дизайна.</p>
+    <div class="foot">
+      <a href="https://github.com/VoltAgent/awesome-claude-design">github.com/VoltAgent/awesome-claude-design</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>Плагин Figma</h3>
+    <p><em>Плагин.</em> Вытаскивает стили из вашего файла и собирает DESIGN.md.</p>
+    <div class="foot">
+      <a href="https://www.figma.com/community/plugin/1612814320994608244/design-md-generator">Figma Community — DESIGN.md Generator</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>designmd.co</h3>
+    <p><em>Каталог.</em> Готовые дизайны и удалённый MCP-сервер, чтобы агент брал дизайн
+    из каталога без копипаста.</p>
+    <div class="foot">
+      <a href="https://www.designmd.co/">designmd.co</a>
+    </div>
   </article>
 </div>
 
