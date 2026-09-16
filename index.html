@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code для дизайна</title>
+<style>
+  /* Всё, что здесь не задано, — дефолт браузера: h1 в 2em, h2 в 1.5em,
+     h3 в 1.17em, отступы абзацев в 1em, подчёркнутые ссылки, моноширинный
+     шрифт в pre и code. Заданы только сетка и рамка карточки — то, чего
+     у браузера нет. Times назван явно потому, что дефолтный serif
+     на мобильных отличается. */
+  body {
+    font-family: "Times New Roman", Times, serif;
+    color: #000;
+    background: #fff;
+    max-width: 64rem;
+    margin: 0;
+    padding: 16px;
+  }
+  a { color: #0000EE; }
+
+  /* Вертикальные отступы заголовков — половина браузерных
+     (h1 .67em, h2 .83em, h3 1em). */
+  h1 { margin: .335em 0; }
+  h2 { margin: .415em 0; }
+  h3 { margin: .5em 0; }
+
+  /* Сетка. align-items не трогаем: дефолт stretch тянет все карточки ряда
+     до общей высоты, поэтому ряды ровные. */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+    gap: 16px;
+    margin: 1em 0;
+  }
+  .c {
+    border: 1px solid #000;
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+  }
+  /* Карточка, которой нужен весь ряд: не висит одна в колонке. */
+  .c.full { grid-column: 1 / -1; }
+  /* Первый заголовок и последний абзац внутри карточки без внешних отступов,
+     иначе рамка получает разный воздух сверху и снизу. */
+  .c > :first-child { margin-top: 0; }
+  .c > :last-child { margin-bottom: 0; }
+  /* Команда установки и ссылка прижаты к низу — низы карточек в ряду
+     оказываются на одной линии. */
+  .c .foot { margin-top: auto; padding-top: .6em; }
+  pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    border: 1px solid #000;
+    border-radius: 8px;
+    padding: 6px 8px;
+    margin: 0 0 .5em;
+  }
+  .c .foot a { word-break: break-all; }
+
+  @media (min-width: 640px) { body { padding: 24px; } }
+</style>
+</head>
+<body>
+
+<h1>Claude Code для дизайна</h1>
+
+<p>Что поставить дизайнеру: агенты, скиллы, MCP-серверы и команды.
+Для каждого — описание и способ установки. Ссылки и команды
+проверены 16 сентября 2026 года.</p>
+
+<p><a href="#kak">Как это ставится</a> · <a href="#agenty">Агенты</a> ·
+<a href="#dizayn">Скиллы для дизайна</a> · <a href="#designmd">DESIGN.md</a> ·
+<a href="#tekst">Текст и видео</a> · <a href="#process">Процессные</a> ·
+<a href="#mcp">MCP-серверы</a> · <a href="#komandy">Команды</a> ·
+<a href="#glavnoe">Что важнее скиллов</a></p>
+
+<h2 id="kak">Как установить</h2>
+
+<p>Есть три способа установки, которые легко перепутать. Перезапускать Claude Code после установки
+обычно не нужно: для нового плагина используйте <code>/reload-plugins</code>, для нового или
+изменённого скилла — <code>/reload-skills</code>.</p>
+
+<div class="grid">
+  <article class="c">
+    <h3>Плагины</h3>
+    <p>Ставятся из маркетплейсов двумя командами прямо в Claude Code. Или через
+    <code>/plugin</code> — откроется меню для установки мышкой. Первая команда только
+    добавляет маркетплейс, сам плагин ставит вторая. Плагин может содержать скиллы,
+    агенты, команды, хуки и MCP-серверы.</p>
+    <div class="foot"><pre>/plugin marketplace add автор/репозиторий
+/plugin install имя@маркетплейс</pre></div>
+  </article>
+
+  <article class="c">
+    <h3>Скиллы</h3>
+    <p>Папки с файлом <code>SKILL.md</code>. Поместите их в <code>~/.claude/skills/</code>
+    для работы во всех проектах на этом компьютере или в <code>.claude/skills/</code>
+    внутри проекта.
+    Многие можно установить через <code>git clone</code> прямо в эту папку.</p>
+  </article>
+
+  <article class="c">
+    <h3>MCP-серверы</h3>
+    <p>Внешние инструменты и сервисы, доступные Claude: браузер, Figma, каталог
+    референсов. Сервер может работать у вас на компьютере или быть удалённым. Официальные
+    коннекторы подключаются в настройках на claude.ai и появляются в Claude Code, если вы
+    вошли через аккаунт claude.ai. Статус и авторизация —
+    через <code>/mcp</code>.</p>
+    <div class="foot"><pre>claude mcp add имя --scope user …</pre></div>
+  </article>
+</div>
+
+<h2 id="agenty">Агенты для дизайна</h2>
+
+<p>Агент — отдельный помощник со своей инструкцией, своим набором инструментов
+и отдельным контекстом. Его вызывают для конкретной задачи. Переписка из главной сессии
+в неё не попадает.</p>
+
+<p>Все четыре агента устанавливаются вместе:</p>
+
+<pre>/plugin marketplace add ux-vika/design-team-skills
+/plugin install design-team-skills@design-team-marketplace</pre>
+
+<p>Репозиторий: <a href="https://github.com/ux-vika/design-team-skills">github.com/ux-vika/design-team-skills</a>.
+Чтобы design-qa и design-reviewer работали с макетами, нужна подключённая по MCP Figma:
+они читают скриншоты и контекст макета. Свёрстанные страницы design-reviewer,
+design-advisor и design-qa рендерят в headless-браузере при ширине 1440, 768 и 375 пикселей
+и оценивают по картинке, а не по коду. Если браузера нет, агент так и пишет, а визуальные
+выводы помечает как гипотезы. design-researcher в основном ищет в вебе, Figma ему
+не обязательна.</p>
+
+<div class="grid">
+  <article class="c">
+    <h3>design-advisor</h3>
+    <p><em>Агент.</em> UX-советник и информационный архитектор: где разместить элементы,
+    какой контрол выбрать — табы или сайдбар, модалка или drawer, что сгруппировать
+    или убрать. Работает и по описанию задачи, когда экрана ещё нет.</p>
+    <p class="foot">Зовут словами «куда поставить X», «спроектируй структуру экрана»,
+    «наведи порядок в раскладке».</p>
+  </article>
+
+  <article class="c">
+    <h3>design-qa</h3>
+    <p><em>Агент.</em> Тестировщик макетов: контраст, alt, семантика, размеры зон нажатия,
+    адаптивность, юзабилити.</p>
+    <p class="foot">Зовут словами «проверь макет», «нормально ли на мобиле», «найди проблемы».</p>
+  </article>
+
+  <article class="c">
+    <h3>design-reviewer</h3>
+    <p><em>Агент.</em> Критик дизайна: иерархия, типографика, цвет, композиция, общее впечатление.</p>
+    <p class="foot">Зовут словами «отревьюй дизайн», «как сделать солиднее», «раскритикуй».</p>
+  </article>
+
+  <article class="c">
+    <h3>design-researcher</h3>
+    <p><em>Агент.</em> Ресёрчер: ищет в интернете референсы, тренды, конкурентов и UX-паттерны.</p>
+    <p class="foot">Зовут словами «найди примеры», «что в тренде», «как делают другие».</p>
+  </article>
+
+  <article class="c full">
+    <h3>Общий свод правил</h3>
+    <p>Помимо четырёх агентов, в плагине есть общий файл <code>rules/ux-rules.md</code>.
+    В нём законы UX (Фиттс, Хик, Миллер, Якоб, гештальт, Теслер), привычное размещение
+    элементов, выбор контрола под задачу, паттерны навигации, иерархия
+    и типографика, доступность, анти-паттерны. Правила пронумерованы, например §3.4.
+    Агент ссылается на конкретный пункт, и вы
+    можете проверить ссылку.</p>
+    <p>В начале инструкции каждому из четырёх агентов предписано прочитать
+    общий свод правил.</p>
+    <p class="foot">Без такого файла каждый агент судит по-своему, а «сделай иерархично»
+    остаётся вкусовщиной. Правка общего файла меняет поведение сразу всех четырёх агентов.
+    Правила записаны в обычном markdown и лежат в отдельной папке <code>rules/</code> рядом с агентами.</p>
+  </article>
+</div>
+
+<h2 id="dizayn">Скиллы для дизайна</h2>
+
+<p>В порядке убывания влияния на внешний вид результата.</p>
+
+<div class="grid">
+  <article class="c">
+    <h3>taste-skill</h3>
+    <p><em>Набор скиллов.</em> Для борьбы с шаблонным дизайном: основной taste-skill, minimalist, brutalist,
+    soft, redesign, brandkit, stitch, image-to-code, генерация картинок под веб и мобилки.
+    Три настройки со шкалой от 1 до 10: DESIGN_VARIANCE, MOTION_INTENSITY, VISUAL_DENSITY.</p>
+    <p>Убирает узнаваемые признаки AI-вёрстки: Inter
+    на все случаи жизни, фиолетово-синий градиент, карточки внутри карточек, серый текст
+    на цветном фоне.</p>
+    <div class="foot">
+      <pre>npx skills add https://github.com/Leonxlnx/taste-skill --skill "design-taste-frontend"</pre>
+      <a href="https://github.com/Leonxlnx/taste-skill">github.com/Leonxlnx/taste-skill</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>impeccable</h3>
+    <p><em>Набор команд.</em> Команды для правок: <code>/impeccable polish</code>,
+    <code>audit</code>, <code>critique</code>, <code>distill</code>, <code>animate</code>,
+    <code>bolder</code>, <code>quieter</code>. Плюс детерминированные детекторы
+    AI-дизайна, работающие без модели и без ключа. <code>/impeccable init</code> создаёт
+    PRODUCT.md, <code>/impeccable document</code> собирает DESIGN.md из кода проекта,
+    и на эти файлы опираются остальные команды. Вырос
+    из <a href="https://github.com/anthropics/skills/tree/main/skills/frontend-design">frontend-design</a>
+    от Anthropic.</p>
+    <p>Чтобы сделать дизайн спокойнее, достаточно команды «тише».</p>
+    <div class="foot">
+      <pre>npx impeccable install
+/impeccable init</pre>
+      <a href="https://github.com/pbakaus/impeccable">github.com/pbakaus/impeccable</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>ux-designer-skill</h3>
+    <p><em>Скилл.</em> Самый подробный по UX-теории: SKILL.md и объёмная библиотека
+    справочников. Нильсен, гештальт, типографика, формы, мобильный UX, AI-интерфейсы,
+    этичный дизайн. Проверяет WCAG 2.2 AA и ищет тёмные паттерны. Опирается на
+    Nielsen Norman, WCAG, Material Design, Apple HIG, Google PAIR, web.dev. MIT.</p>
+    <p>Полезнее всего для UX-аудитов и ревью чужих интерфейсов.</p>
+    <div class="foot">
+      <pre>git clone https://github.com/szilu/ux-designer-skill ~/.claude/skills/ux-designer</pre>
+      <a href="https://github.com/szilu/ux-designer-skill">github.com/szilu/ux-designer-skill</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>ui-ux-pro-max</h3>
+    <p><em>Плагин.</em> Справочник: стили, палитры, пары шрифтов, типы продуктов,
+    UX-гайдлайны и типы графиков под популярные стеки. Включает отдельные
+    скиллы: design-system (токены primitive → semantic → component), ui-styling
+    (shadcn/ui на Radix плюс Tailwind), slides (HTML-презентации с Chart.js), banner-design,
+    brand и design.</p>
+    <p>Помогает уточнить запрос «сделай современно и удобно» конкретными значениями.</p>
+    <div class="foot">
+      <pre>/plugin marketplace add nextlevelbuilder/ui-ux-pro-max-skill
+/plugin install ui-ux-pro-max@ui-ux-pro-max-skill</pre>
+      <a href="https://github.com/nextlevelbuilder/ui-ux-pro-max-skill">github.com/nextlevelbuilder/ui-ux-pro-max-skill</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>motion-design</h3>
+    <p><em>Скилл.</em> Тайминги, easing, хореография, принципы Disney, адаптированные
+    для интерфейса. Работает с CSS, Framer Motion, GSAP, Lottie, Spring.</p>
+    <p>Помогает задать плавность анимации в миллисекундах и кривых.</p>
+    <div class="foot">
+      <a href="https://claudemarketplaces.com/skills/lottiefiles/motion-design-skill/motion-design">claudemarketplaces.com — motion-design</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>extract-design-system</h3>
+    <p><em>Скилл.</em> Извлекает дизайн-примитивы с любого сайта и создаёт стартовые
+    файлы токенов.</p>
+    <p>Для разбора конкурентов: даёт точные значения, включая оттенки цветов.</p>
+    <div class="foot">
+      <a href="https://claudemarketplaces.com/skills/arvindrk/extract-design-system/extract-design-system">claudemarketplaces.com — extract-design-system</a>
+    </div>
+  </article>
+</div>
+
+<h2 id="designmd">DESIGN.md</h2>
+
+<p>DESIGN.md — формат файла, не скилл. Решает главную проблему AI-вёрстки: без вашей
+дизайн-системы модель каждый раз придумывает свою.</p>
+
+<p>Открытая спецификация от Google Labs под Apache-2.0. Пока в статусе alpha:
+формат и CLI ещё меняются. Положите файл в корень проекта.
+В нём две части. YAML-шапка с токенами: colors, typography, rounded, spacing,
+components, со ссылками между ними вида <code>{colors.tertiary}</code>. Дальше текст
+по разделам: Overview, Colors, Typography, Layout, Elevation, Shapes, Components,
+Do's and Don'ts. В токенах агент найдёт точные значения, в тексте — объяснение их назначения.</p>
+
+<p>По моему опыту, точность больше всего повышает раздел Don'ts: явные запреты вроде
+«не больше двух CTA на экране» или «никаких теней, только границы» работают лучше,
+чем описания желаемого. Формат задуман общим для разных AI-инструментов,
+поэтому файл не приходится переписывать под каждый.</p>
+
+<pre>npx @google/design.md lint DESIGN.md
+npx @google/design.md export --format css-tailwind DESIGN.md
+npx @google/design.md spec</pre>
+
+<p>Спецификация: <a href="https://github.com/google-labs-code/design.md">github.com/google-labs-code/design.md</a>.
+Пакет: <a href="https://www.npmjs.com/package/@google/design.md">npmjs.com/package/@google/design.md</a>.
+Понятный разбор: <a href="https://designproject.io/blog/design-md-file/">designproject.io</a>.</p>
+
+<p>Писать такой файл с нуля не обязательно:</p>
+
+<div class="grid">
+  <article class="c">
+    <h3>generate-design-md</h3>
+    <p><em>Скилл.</em> Команда <code>/generate-design-md</code>: соберёт файл по вашему
+    описанию стиля или извлечёт цвета, шрифты и отступы из существующего кода.
+    Умеет валидировать и экспортировать.</p>
+    <div class="foot">
+      <pre>git clone https://github.com/shripunta/generate-design-md.git ~/.claude/skills/generate-design-md</pre>
+      <a href="https://github.com/ShriPunta/generate-design-md">github.com/ShriPunta/generate-design-md</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>Готовые DESIGN.md брендов</h3>
+    <p><em>Каталог.</em> По брендам: Linear, Notion, Stripe, Vercel, Figma, Apple, Spotify,
+    Tesla. Загрузите файл в Claude Design, чтобы получить CSS-переменные, UI-kit и SKILL.md.
+    Так можно быстро задать ориентир для дизайна.</p>
+    <div class="foot">
+      <a href="https://github.com/VoltAgent/awesome-claude-design">github.com/VoltAgent/awesome-claude-design</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>Плагин Figma</h3>
+    <p><em>Плагин.</em> Вытаскивает стили из вашего файла и собирает DESIGN.md.</p>
+    <div class="foot">
+      <a href="https://www.figma.com/community/plugin/1612814320994608244/design-md-generator">Figma Community — DESIGN.md Generator</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>designmd.co</h3>
+    <p><em>Каталог.</em> Готовые дизайны и удалённый MCP-сервер, чтобы агент брал дизайн
+    из каталога без копипаста.</p>
+    <div class="foot">
+      <a href="https://www.designmd.co/">designmd.co</a>
+    </div>
+  </article>
+</div>
+
+<h2 id="tekst">Скиллы для текста и видео</h2>
+
+<div class="grid">
+  <article class="c">
+    <h3>humanizer-ru</h3>
+    <p><em>Скилл.</em> Находит признаки машинной генерации в русском тексте и делает его
+    естественнее. Редкий случай скилла именно под русский.</p>
+    <p class="foot">Можно настроить под себя: в markdown описано, что считать признаком машинного текста.</p>
+   <div class="foot">
+  <pre>npx skills add smixs/humanizer-ru</pre>
+  <a href="https://github.com/smixs/humanizer-ru">github.com/smixs/humanizer-ru</a>
+</div>
+ </article>
+
+  <article class="c">
+    <h3>stop-slop</h3>
+    <p><em>Скилл.</em> То же для английской прозы: убирает предсказуемые AI-паттерны.</p>
+  </article>
+
+  <article class="c">
+    <h3>remotion-superpowers</h3>
+    <p><em>Плагин.</em> Видео в React через Remotion: композиции, анимация, субтитры, рендер.</p>
+    <div class="foot">
+      <pre>/plugin marketplace add DojoCodingLabs/remotion-superpowers
+/plugin install remotion-superpowers@remotion-superpowers</pre>
+      После установки запустите <code>/setup</code>: он пропишет ключи API и проверит MCP.
+      <a href="https://github.com/DojoCodingLabs/remotion-superpowers">github.com/DojoCodingLabs/remotion-superpowers</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>claude-video</h3>
+    <p><em>Плагин.</em> Скилл <code>/watch</code>: загружает видео по ссылке или с диска,
+    разбирает на кадры, извлекает транскрипт и отвечает на вопросы по содержимому.</p>
+    <div class="foot">
+      <pre>/plugin marketplace add bradautomates/claude-video
+/plugin install watch@claude-video</pre>
+      <a href="https://github.com/bradautomates/claude-video">github.com/bradautomates/claude-video</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>instagram-skills</h3>
+    <p><em>Плагин.</em> Подписи, карусели, хуки, хэштеги, контент-план, профиль.</p>
+    <div class="foot">
+      <pre>/plugin marketplace add sergebulaev/instagram-skills
+/plugin install instagram-skills@instagram-skills</pre>
+      <a href="https://github.com/sergebulaev/instagram-skills">github.com/sergebulaev/instagram-skills</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>marketing-skills</h3>
+    <p><em>Плагин.</em> Лендинги, письма, A/B-тесты, SEO, реклама, цены, онбординг, отток.
+    Полезен, когда дизайн упирается в маркетинговые решения.</p>
+    <div class="foot">
+      <pre>/plugin marketplace add coreyhaines31/marketingskills
+/plugin install marketing-skills</pre>
+      <a href="https://github.com/coreyhaines31/marketingskills">github.com/coreyhaines31/marketingskills</a>
+    </div>
+  </article>
+</div>
+
+<h2 id="process">Процессные скиллы</h2>
+
+<p>Скиллы для организации работы. Влияют на результат сильнее любого набора палитр.</p>
+
+<div class="grid">
+  <article class="c">
+    <h3>superpowers</h3>
+    <p><em>Набор скиллов.</em> <strong>brainstorming</strong> запрещает писать код, пока замысел
+    не согласован явным «да». <strong>systematic-debugging</strong> требует найти причину
+    перед исправлением указанного места. <strong>test-driven-development</strong>
+    и <strong>verification-before-completion</strong> не дают сказать «готово» без проверки.
+    <strong>writing-plans</strong> и <strong>executing-plans</strong> сохраняют план в файл
+    и выполняют его по шагам с контрольными точками.</p>
+    <p>Brainstorming помогает избежать самой дорогой ошибки: быстро сделать не то. План на диске
+    сохраняется при обрыве контекста, память сессии теряется.</p>
+    <div class="foot"><pre>/plugin</pre>
+    Устанавливается из официального маркетплейса Anthropic.</div>
+  </article>
+
+  <article class="c">
+    <h3>context-engineering</h3>
+    <p><em>Плагин.</em> Сжатие контекста, деградация внимания, файловые черновики,
+    дизайн инструментов, память, оценка качества.</p>
+    <p>Объясняет, почему в длинной сессии агент теряет нить
+    и как этого избежать.</p>
+    <div class="foot">
+      <pre>/plugin marketplace add muratcankoylan/Agent-Skills-for-Context-Engineering
+/plugin install context-engineering@context-engineering-marketplace</pre>
+      <a href="https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering">github.com/muratcankoylan/Agent-Skills-for-Context-Engineering</a>
+    </div>
+  </article>
+</div>
+
+<h2 id="mcp">MCP-серверы</h2>
+
+<p>Через MCP вы подключаете к Claude браузер, Figma и каталоги референсов. Одни серверы
+только читают, другие умеют вносить изменения — это отмечено в карточках.</p>
+
+<div class="grid">
+  <article class="c">
+    <h3>Figma</h3>
+    <p><em>Официальный.</em> Работает в обе стороны. Читает макеты для работы с кодом и вносит изменения в Figma:
+    создаёт компоненты, переменные, фреймы и автолейаут с учётом дизайн-системы. Плюс FigJam
+    и Code Connect.</p>
+    <p>Для дизайнера первый по важности: без него агент судит о макете по коду.
+    Что можно менять в файле, зависит от вашего тарифа Figma и прав на файл.</p>
+    <p class="foot">Подключается в настройках коннекторов на claude.ai.</p>
+  </article>
+
+  <article class="c">
+    <h3>Mobbin</h3>
+    <p><em>Официальный.</em> Сотни тысяч экранов и пользовательских потоков реальных приложений,
+    с поиском. Только читает. Нужен платный тариф Mobbin — MCP входит во все платные.</p>
+    <p>Помогает проверить, как задачу решают в реальных продуктах.</p>
+    <div class="foot">
+      <pre>claude mcp add mobbin --scope user --transport http https://api.mobbin.com/mcp</pre>
+      <a href="https://mobbin.com/mcp">mobbin.com/mcp</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>Chrome DevTools</h3>
+    <p><em>Официальный.</em> Управляет открытым Chrome: инспекция, отладка, производительность.
+    Для доступности есть <code>take_snapshot</code> — снимок страницы по дереву доступности —
+    и <code>lighthouse_audit</code>: проверка Lighthouse по доступности, SEO и best practices.</p>
+    <p>Доступность и скорость проверяются на реальной странице, а не по коду.</p>
+    <div class="foot">
+      <pre>claude mcp add chrome-devtools --scope user npx chrome-devtools-mcp@latest</pre>
+      <a href="https://github.com/ChromeDevTools/chrome-devtools-mcp">github.com/ChromeDevTools/chrome-devtools-mcp</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>Playwright</h3>
+    <p><em>Сервер.</em> Браузер под управлением агента: открыть страницу, кликнуть, снять
+    скриншот, померить на разных размерах экрана, прочитать консоль.</p>
+    <p>Самый простой способ показать агенту свёрстанную страницу.</p>
+    <div class="foot">
+      <pre>claude mcp add playwright --scope user npx @playwright/mcp@latest</pre>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>axe DevTools</h3>
+    <p><em>Официальный.</em> Сервер Deque на движке axe только для проверки доступности.
+    Нужен ключ API: сервер входит в платный Axe DevTools for Web.</p>
+    <p>Отраслевой стандарт, на который можно
+    сослаться в отчёте об аудите доступности для клиента.</p>
+    <div class="foot">
+      <a href="https://docs.deque.com/devtools-server/4.0.0/en/setup-claude-code/">docs.deque.com — настройка в Claude Code</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>Storybook</h3>
+    <p><em>Официальный, в статусе Preview.</em> Предоставляет агенту компоненты и документацию,
+    создаёт истории, запускает тесты, включая проверки доступности. API ещё может меняться.</p>
+    <p>Полезен, если у вас есть библиотека компонентов: агент использует их, а не придумывает свои.</p>
+    <div class="foot">
+      <a href="https://storybook.js.org/docs/ai/mcp/overview">storybook.js.org/docs/ai/mcp</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>21st.dev, shadcn/ui, Magic UI</h3>
+    <p><em>Реестры.</em> Готовые React-компоненты, блоки и анимации с командами установки
+    через CLI. Не нужно верстать с нуля.</p>
+    <div class="foot">
+      <pre>npx @21st-dev/cli@latest init --client claude</pre>
+      Бывший Magic MCP, теперь 21st MCP. Старые ключи Magic больше не работают.
+      <a href="https://21st.dev/mcp">21st.dev/mcp</a>
+    </div>
+  </article>
+
+  <article class="c">
+    <h3>Canva и Gamma</h3>
+    <p><em>Официальные.</em> Canva создаёт, редактирует и экспортирует дизайны с учётом
+    Brand Kit и пишет обратно. Gamma делает презентации, документы и веб-страницы
+    по описанию, с аналитикой просмотров.</p>
+    <p class="foot">Оба — коннекторы в настройках на claude.ai.</p>
+  </article>
+
+  <article class="c">
+    <h3>Ещё восемь</h3>
+    <p><strong>Adobe Creative Cloud</strong> — инструменты Photoshop, Lightroom,
+    Illustrator и Firefly, пишет обратно. <strong>Webflow</strong> — обновляет CMS, страницы
+    и стили, можно сдать работающий сайт. <strong>Framer</strong> — правит стили
+    и компоненты, экспортирует React, но официального сервера нет.
+    <strong>Penpot</strong> — опенсорсная альтернатива Figma. <strong>Magic Patterns</strong> —
+    двусторонняя синхронизация дизайна и кода. <strong>Notion</strong> — спеки
+    и исследования. <strong>Nicely Done</strong> — большая библиотека экранов именно SaaS.
+    <strong>Blender</strong> — 3D по описанию.</p>
+    <p class="foot">Команды подключения взяты из обзоров, вручную не проверены:
+    <a href="https://www.toools.design/blog-posts/best-mcp-servers-for-designers">toools.design</a>,
+    <a href="https://mcp.directory/blog/best-mcp-servers-for-design-2026">mcp.directory</a>.</p>
+  </article>
+</div>
+
+<h2 id="komandy">Команды</h2>
+
+<h3>Команды на каждый день</h3>
+
+<p><code>/context</code> — что сейчас занимает контекст: системный промпт, правила, MCP,
+история. Заодно способ проверить, что файлы правил подхватились.</p>
+
+<p><code>/compact</code> — сжать историю диалога в краткое резюме и продолжить работу. Можно
+с подсказкой: <code>/compact оставь только про вёрстку презентации</code>.</p>
+
+<p><code>/clear</code> — стереть историю полностью, начать с чистого листа. Правила
+из CLAUDE.md останутся.</p>
+
+<p><code>/rewind</code> — откатить разговор и/или файлы к более раннему состоянию.
+Помогает, если агент что-то сломал.</p>
+
+<p><code>/resume</code> — вернуться в одну из прошлых сессий.</p>
+
+<p><code>/model</code> — сменить модель, <code>/fast</code> — включить быстрый режим Opus.
+Fast mode доступен в Claude Code на платных планах и расходует usage credits.
+Он работает быстрее обычного режима, но стоит дороже.</p>
+
+<p><code>/usage</code> и <code>/cost</code> — сколько лимитов использовано и сколько стоила сессия.</p>
+
+<h3>Настройки и окружение</h3>
+
+<p><code>/config</code> — общие настройки: тема, модель и прочее.</p>
+
+<p><code>/permissions</code> — что агенту разрешено без спроса.</p>
+
+<p><code>/agents</code> — отдельного редактора больше нет. Субагента создают, попросив
+об этом Claude, или правят файлы в <code>.claude/agents/</code> вручную.</p>
+
+<p><code>/reload-plugins</code> и <code>/reload-skills</code> — подхватить установленные
+или изменённые плагины и скиллы без перезапуска.</p>
+
+<p><code>/mcp</code> — статус MCP-серверов и авторизация. Здесь же можно войти в коннекторы,
+которые требуют авторизации.</p>
+
+<p><code>/hooks</code> — автодействия «каждый раз, когда…».</p>
+
+<p><code>/memory</code> — открыть и поправить файлы памяти.</p>
+
+<p><code>/doctor</code>, <code>/status</code> — диагностика, если что-то ведёт себя странно.</p>
+
+<p><code>/add-dir</code> — добавить папку в рабочие директории во время сессии.</p>
+
+<p><code>/export</code> — выгрузить разговор в файл.</p>
+
+<p><code>/artifacts</code> — список опубликованных артефактов: o открыть, c скопировать ссылку.</p>
+
+<h3>Команды-скиллы из комплекта Claude Code</h3>
+
+<p><code>/loop</code> — повторять промпт или другую команду с заданным интервалом:
+<code>/loop 5m /code-review</code>. Без интервала агент сам выбирает паузы.</p>
+
+<p><code>/schedule</code> — то же, но в облаке по расписанию (cron), включая разовое
+«запусти завтра в 15:00». Нужен вход через аккаунт claude.ai, а в организации
+эту функцию могут отключить.</p>
+
+<p><code>/code-review</code> — ревью текущего диффа или PR. Есть
+<code>/code-review ultra</code> — глубокое мультиагентное ревью в облаке; запускает только
+человек.</p>
+
+<p><code>/simplify</code> — упростить изменённый код и выделить части для повторного использования,
+без поиска багов.</p>
+
+<p><code>/run</code> — запустить проект и проверить, работает ли изменение.</p>
+
+<p><code>/init</code> — собрать CLAUDE.md для нового проекта.</p>
+
+<p><code>/security-review</code> — проверка изменений на уязвимости.</p>
+
+<p><code>/config</code> — правки settings.json словами: «разреши npm», «после
+остановки покажи X».</p>
+
+<p><code>/fewer-permission-prompts</code> — просканировать транскрипты и собрать белый список
+частых безопасных команд, чтобы агент реже запрашивал разрешение.</p>
+
+<h2 id="glavnoe">Что влияет на результат сильнее скиллов</h2>
+
+<div class="grid">
+  <article class="c">
+    <h3>Файлы правил</h3>
+    <p>CLAUDE.md в корне проекта и файлы в <code>.claude/rules/</code> читаются в начале
+    каждой сессии. Они определяют, что агент сделает сам, а что согласует с вами;
+    что считать законченной задачей; чего нельзя делать без разрешения.</p>
+    <p class="foot">Набор палитр без этих файлов работает заметно хуже, чем средний набор
+    с ними. Отдельно стоит завести список действий, которые агент не делает без явного «да»:
+    всё необратимое, всё, что уходит наружу, всё, что касается секретов.</p>
+  </article>
+
+  <article class="c">
+    <h3>Память</h3>
+    <p>Папка с фактами и индексом MEMORY.md. Агент читает эти файлы между сессиями.</p>
+    <p class="foot">Без неё новая сессия знает только то, что записано в CLAUDE.md,
+    а остальное приходится объяснять заново.</p>
+  </article>
+
+  <article class="c">
+    <h3>Глаза</h3>
+    <p>Пока не подключена Figma или браузер, агент судит о дизайне по коду.</p>
+    <p class="foot">Это главная причина, почему AI-вёрстка выходит «грязной»: агент
+    не видит, что сделал.</p>
+  </article>
+
+  <article class="c">
+    <h3>Чёткость запроса</h3>
+    <p>«Придумай хороший современный удобный дизайн» — три прилагательных и ни одного факта,
+    на выходе будет усреднённый шаблон. Укажите, кто пользователь, что он делает
+    на экране, какие есть состояния и чего делать нельзя.</p>
+    <p class="foot">В DESIGN.md можно один раз записать ответы и больше
+    их не повторять.</p>
+  </article>
+</div>
+
+<p class="updated">Гайд собран 15 сентября 2026 года, ссылки и команды проверены 16 сентября.</p>
+
+</body>
+</html>
