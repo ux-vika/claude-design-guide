@@ -23,7 +23,7 @@
   /* Вертикальные отступы заголовков — половина браузерных
      (h1 .67em, h2 .83em, h3 1em). */
   h1 { margin: .335em 0; }
-  h2 { margin: 72px 0 .415em; }
+  h2 { margin: 36px 0 .415em; }
   h3 { margin: .5em 0; }
 
   /* Сетка. align-items не трогаем: дефолт stretch тянет все карточки ряда
@@ -60,7 +60,10 @@
   }
   .c .foot a { word-break: break-all; }
 
-  @media (min-width: 640px) { body { padding: 24px 24px 24px 48px; } }
+  @media (min-width: 640px) {
+    body { padding: 24px 24px 24px 48px; }
+    h2 { margin-top: 72px; }
+  }
 </style>
 </head>
 <body>
